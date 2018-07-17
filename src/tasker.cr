@@ -28,24 +28,23 @@ class Tasker
 
   # Creates a once off task that occurs at a particular date and time
   def at(time : Time, &callback)
-      task = Tasker::OneShot.new(self, time, &callback)
-      task.schedule
-      task
+      Tasker::OneShot.new(self, time, &callback).schedule
   end
 
   # Creates a once off task that occurs in the future
   def in(span : Time::Span, &callback)
-      task = Tasker::OneShot.new(self, span.from_now, &callback)
-      task.schedule
-      task
+      Tasker::OneShot.new(self, span.from_now, &callback).schedule
   end
 
   # Creates repeating task
   # Schedules the repeat after executing the task
   def every(span : Time::Span, &callback)
-      task = Tasker::Repeat.new(self, span, &callback)
-      task.schedule
-      task
+      Tasker::Repeat.new(self, span, &callback).schedule
+  end
+
+  # Create a repeating event that uses a CRON line to determine the trigger time
+  def cron(line : String, timezone = Time::Location.local, &callback)
+      Tasker::CRON.new(self, line, timezone, &callback).schedule
   end
 
   def schedule(task : Task)
@@ -82,11 +81,18 @@ class Tasker
 
   private def check_timer
     task = @scheduled[0]?
-    update_timer if task && (task.next_epoch < @next)
+    if task
+      if task.next_epoch != @next
+        @next = Int64::MAX
+        update_timer
+      end
+    else
+      @next = Int64::MAX
+    end
   end
 
   private def update_timer
-    time = @scheduled[0].not_nil!.next_epoch
+    time = @scheduled[0].next_epoch
     @next = time
     now = Time.now.epoch_ms
     period = time - now

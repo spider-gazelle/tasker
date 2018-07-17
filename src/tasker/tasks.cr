@@ -42,6 +42,7 @@ class Tasker::Task
 
   def schedule
     @scheduler.schedule(self)
+    self
   end
 
   def trigger
@@ -58,6 +59,7 @@ class Tasker::OneShot < Tasker::Task
   end
 
   def trigger
+    @last_scheduled = @next_scheduled
     @next_scheduled = nil
     super
   end
@@ -73,6 +75,39 @@ class Tasker::Repeat < Tasker::Task
     @last_scheduled = @next_scheduled
     @next_scheduled = @period.from_now
     @scheduler.schedule(self)
+    self
+  end
+
+  def pause
+    cancel
+  end
+
+  def resume
+    last = @last_scheduled
+    schedule
+    @last_scheduled = last
+  end
+
+  def trigger
+    Tasker.next_tick { schedule }
+    super
+  end
+end
+
+class Tasker::CRON < Tasker::Task
+  property location : Time::Location
+
+  def initialize(scheduler, cron, @location : Time::Location, &block)
+    super(scheduler)
+    @callback = block
+    @cron = CronParser.new(cron)
+  end
+
+  def schedule
+    @last_scheduled = @next_scheduled
+    @next_scheduled = @cron.next(Time.now(@location))
+    @scheduler.schedule(self)
+    self
   end
 
   def pause
