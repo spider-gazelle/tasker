@@ -1,0 +1,8 @@
+name: tasker
+version: 1.0.0
+
+dependencies:
+  cron_parser:
+    github: kostya/cron_parser
+  bisect:
+    github: spider-gazelle/bisect
