@@ -28,6 +28,7 @@ class Tasker::Task
   end
 
   def cancel
+    @next_scheduled = nil
     @scheduler.cancel(self)
   end
 
@@ -58,6 +59,34 @@ class Tasker::OneShot < Tasker::Task
 
   def trigger
     @next_scheduled = nil
+    super
+  end
+end
+
+class Tasker::Repeat < Tasker::Task
+  def initialize(scheduler, @period : Time::Span, &block)
+    super(scheduler)
+    @callback = block
+  end
+
+  def schedule
+    @last_scheduled = @next_scheduled
+    @next_scheduled = @period.from_now
+    @scheduler.schedule(self)
+  end
+
+  def pause
+    cancel
+  end
+
+  def resume
+    last = @last_scheduled
+    schedule
+    @last_scheduled = last
+  end
+
+  def trigger
+    Tasker.next_tick { schedule }
     super
   end
 end

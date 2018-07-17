@@ -22,6 +22,10 @@ class Tasker
     @@default = Tasker.new
   end
 
+  def self.next_tick(&block) : Concurrent::Future(Nil)
+    delay(0) { block.call; nil }
+  end
+
   # Creates a once off task that occurs at a particular date and time
   def at(time : Time, &callback)
       task = Tasker::OneShot.new(self, time, &callback)
@@ -29,8 +33,23 @@ class Tasker
       task
   end
 
+  # Creates a once off task that occurs in the future
+  def in(span : Time::Span, &callback)
+      task = Tasker::OneShot.new(self, span.from_now, &callback)
+      task.schedule
+      task
+  end
+
+  # Creates repeating task
+  # Schedules the repeat after executing the task
+  def every(span : Time::Span, &callback)
+      task = Tasker::Repeat.new(self, span, &callback)
+      task.schedule
+      task
+  end
+
   def schedule(task : Task)
-    return if task.next_scheduled.nil?
+    return unless task.next_scheduled
 
     # Remove the task from the scheduled list and ensure it is in the schedules set
     if @schedules.includes?(task)
@@ -52,9 +71,17 @@ class Tasker
     check_timer
   end
 
+  def num_schedules
+    @scheduled.size
+  end
+
+  def cancel_all
+    @scheduled.dup.each { |task| cancel(task) }
+  end
+
 
   private def check_timer
-    task = @scheduled[0]
+    task = @scheduled[0]?
     update_timer if task && (task.next_epoch < @next)
   end
 
