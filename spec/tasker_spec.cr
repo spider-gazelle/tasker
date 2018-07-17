@@ -95,8 +95,10 @@ describe Tasker do
   it "should schedule a CRON task" do
     sched = Tasker.instance
     time = Time.now
+    minute = time.minute + 1
+    minute = 0 if minute == 60
     ran = false
-    task = sched.cron("#{time.minute + 1} * * * *") { ran = true }
+    task = sched.cron("#{minute} * * * *") { ran = true }
 
     seconds = (60 - time.second) / 2
     sleep seconds
