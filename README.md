@@ -10,6 +10,6 @@ Usage
     require "tasker"
 
     # Grab the default scheduler - really only need a single instance per application
-    scheduler = Tasker.instance
-    scheduler.at(20.seconds.from_now) { perform_action }
+    schedule = Tasker.instance
+    schedule.at(20.seconds.from_now) { perform_action }
 ```
