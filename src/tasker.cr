@@ -6,14 +6,22 @@ class Tasker
 
   @sync_period : Float64
   @timer : Concurrent::Future(Nil)?
+  @no_more_tasks : Channel(Nil)?
 
   def initialize(sync_period = 2.minutes.total_milliseconds)
     @scheduled = [] of Tasker::Task
     @schedules = Set(Tasker::Task).new
     @sync_period = sync_period / 1000.0_f64
+    @no_more_tasks = nil
 
     # Next schedule time
     @next = Int64::MAX
+  end
+
+  def no_more_tasks : Channel(Nil)
+    chan = @no_more_tasks
+    return chan if chan
+    @no_more_tasks = Channel(Nil).new
   end
 
   def self.instance
@@ -88,6 +96,10 @@ class Tasker
       end
     else
       @next = Int64::MAX
+
+      # Notify any listeners that all processing has completed
+      chan = @no_more_tasks
+      chan.send(nil) if chan
     end
   end
 
@@ -119,12 +131,12 @@ class Tasker
 
   private def trigger
     @next = Int64::MAX
-    task = @scheduled.shift.not_nil!
+    task = @scheduled.shift
     @schedules.delete(task)
 
     # This is the task callback
     task.trigger
   ensure
-    check_timer
+    Tasker.next_tick { check_timer }
   end
 end

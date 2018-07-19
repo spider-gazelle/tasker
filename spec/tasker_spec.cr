@@ -92,6 +92,20 @@ describe Tasker do
     sched.num_schedules.should eq(1)
   end
 
+  it "should signal when there are no more tasks to process" do
+    sched = Tasker.new
+    ran = 0
+    task = nil
+    task = sched.every(1.milliseconds) do
+        ran += 1
+        task.not_nil!.cancel if ran > 3
+    end
+    channel = sched.no_more_tasks
+    channel.empty?.should eq(true)
+    channel.receive
+    ran.should eq(4)
+  end
+
   it "should schedule a CRON task" do
     sched = Tasker.instance
     time = Time.now
