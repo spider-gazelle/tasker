@@ -30,10 +30,6 @@ class Tasker
     @@default = Tasker.new
   end
 
-  def self.next_tick(&block) : Concurrent::Future(Nil)
-    delay(0) { block.call; nil }
-  end
-
   # Creates a once off task that occurs at a particular date and time
   def at(time : Time, &callback)
       Tasker::OneShot.new(self, time, &callback).schedule
@@ -137,6 +133,6 @@ class Tasker
     # This is the task callback
     task.trigger
   ensure
-    Tasker.next_tick { check_timer }
+    spawn { check_timer }
   end
 end

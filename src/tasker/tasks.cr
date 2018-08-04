@@ -89,7 +89,7 @@ class Tasker::Repeat < Tasker::Task
   end
 
   def trigger
-    Tasker.next_tick { schedule }
+    spawn { schedule }
     super
   end
 end
@@ -121,7 +121,7 @@ class Tasker::CRON < Tasker::Task
   end
 
   def trigger
-    Tasker.next_tick { schedule }
+    spawn { schedule }
     super
   end
 end

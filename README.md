@@ -1,17 +1,13 @@
 # Tasker
 
+[![Build Status](https://travis-ci.org/spider-gazelle/tasker.svg?branch=master)](https://travis-ci.org/spider-gazelle/tasker)
+
+
 A scheduler for crystal lang. Allows you to schedule tasks to run in the future.
 
 
 Usage
 =====
-
-Delay execution of a task
-
-```ruby
-    Tasker.next_tick { perform_action }
-```
-
 
 Grab an instance of the scheduler
 
