@@ -34,10 +34,37 @@ describe Tasker do
     sched.num_schedules.should eq(0)
   end
 
+  it "should be possible to obtain the return value of the task" do
+    sched = Tasker.instance
+
+    # Test execution
+    task = sched.at(2.milliseconds.from_now) { true }
+    task.get.should eq true
+
+    # Test failure
+    task = sched.at(2.milliseconds.from_now) { raise "was error" }
+    begin
+      task.get
+      raise "not here"
+    rescue error
+      error.message.should eq "was error"
+    end
+
+    # Test cancelation
+    task = sched.at(2.milliseconds.from_now) { true }
+    spawn { task.cancel }
+    begin
+      task.get
+      raise "failed"
+    rescue error
+      error.message.should eq "Task canceled"
+    end
+  end
+
   it "should schedule a repeating task" do
     sched = Tasker.instance
     ran = 0
-    sched.every(2.milliseconds) { ran += 1 }
+    task = sched.every(2.milliseconds) { ran += 1 }
 
     sleep 1.milliseconds
     sched.num_schedules.should eq(1)
@@ -54,12 +81,14 @@ describe Tasker do
     sleep 2.milliseconds
     ran.should eq(3)
     sched.num_schedules.should eq(1)
+
+    task.cancel
   end
 
   it "should pause and resume a repeating task" do
     sched = Tasker.instance
     ran = 0
-    task = sched.every(2.milliseconds) { ran += 1 }
+    task = sched.every(2.milliseconds) { ran += 1; ran }
 
     sleep 3.milliseconds
     ran.should eq(1)
@@ -69,7 +98,7 @@ describe Tasker do
     ran.should eq(2)
     sched.num_schedules.should eq(1)
 
-    task.pause
+    task.cancel
     sched.num_schedules.should eq(0)
 
     sleep 2.milliseconds
@@ -82,6 +111,59 @@ describe Tasker do
     sleep 3.milliseconds
     ran.should eq(3)
     sched.num_schedules.should eq(1)
+
+    task.cancel
+  end
+
+  it "should be possible to obtain the next value of a repeating" do
+    sched = Tasker.instance
+    ran = 0
+    task = sched.every(2.milliseconds) do
+      ran += 1
+      raise "some error" if ran == 4
+      ran
+    end
+
+    # Test execution
+    task.get.should eq 1
+    task.get.should eq 2
+    task.get.should eq 3
+    begin
+      task.get.should eq 4
+      raise "failed"
+    rescue error
+      error.message.should eq "some error"
+    end
+    task.get.should eq 5
+
+    # Test cancelation
+    spawn { task.cancel }
+    begin
+      task.get
+      raise "failed"
+    rescue error
+      error.message.should eq "Task canceled"
+    end
+  end
+
+  it "should act like an enumerable" do
+    sched = Tasker.instance
+    ran = 0
+    task = sched.every(2.milliseconds) do
+      ran += 1
+      raise "other error" if ran == 4
+      ran
+    end
+
+    results = [] of Int32
+    begin
+      task.each { |result| results << result }
+      raise "failed with #{results}"
+    rescue error
+      error.message.should eq "other error"
+    end
+    results.should eq [1, 2, 3]
+    task.cancel
   end
 
   it "should signal when there are no more tasks to process" do
@@ -98,6 +180,8 @@ describe Tasker do
     ran.should eq(4)
   end
 
+  # We calculate what the next minute is and then wait for it to roll by
+  # If it takes too long then we fail it
   it "should schedule a CRON task" do
     sched = Tasker.instance
     time = Time.now
@@ -114,5 +198,7 @@ describe Tasker do
     sleep seconds + 1
     ran.should eq(true)
     sched.num_schedules.should eq(1)
+
+    task.cancel
   end
 end

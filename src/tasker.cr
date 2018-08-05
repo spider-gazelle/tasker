@@ -1,5 +1,4 @@
 require "bisect"
-require "./tasker/tasks"
 
 class Tasker
   @@default : Tasker?
@@ -31,24 +30,24 @@ class Tasker
   end
 
   # Creates a once off task that occurs at a particular date and time
-  def at(time : Time, &callback)
-      Tasker::OneShot.new(self, time, &callback).schedule
+  def at(time : Time, &callback : -> _)
+      Tasker::OneShot.new(self, time, &callback).schedule.not_nil!
   end
 
   # Creates a once off task that occurs in the future
-  def in(span : Time::Span, &callback)
-      Tasker::OneShot.new(self, span.from_now, &callback).schedule
+  def in(span : Time::Span, &callback : -> _)
+      Tasker::OneShot.new(self, span.from_now, &callback).schedule.not_nil!
   end
 
   # Creates repeating task
   # Schedules the repeat after executing the task
-  def every(span : Time::Span, &callback)
-      Tasker::Repeat.new(self, span, &callback).schedule
+  def every(span : Time::Span, &callback : -> _)
+      Tasker::Repeat.new(self, span, &callback).schedule.not_nil!
   end
 
   # Create a repeating event that uses a CRON line to determine the trigger time
-  def cron(line : String, timezone = Time::Location.local, &callback)
-      Tasker::CRON.new(self, line, timezone, &callback).schedule
+  def cron(line : String, timezone = Time::Location.local, &callback : -> _)
+      Tasker::CRON.new(self, line, timezone, &callback).schedule.not_nil!
   end
 
   def schedule(task : Task)
@@ -79,9 +78,8 @@ class Tasker
   end
 
   def cancel_all
-    @scheduled.dup.each { |task| cancel(task) }
+    @scheduled.dup.each { |task| task.cancel }
   end
-
 
   private def check_timer
     task = @scheduled[0]?
@@ -136,3 +134,10 @@ class Tasker
     spawn { check_timer }
   end
 end
+
+require "./tasker/task"
+require "./tasker/future"
+require "./tasker/repeating_task"
+require "./tasker/one_shot"
+require "./tasker/repeat"
+require "./tasker/cron"
