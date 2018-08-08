@@ -61,7 +61,7 @@ class Tasker
     end
 
     # optimal algorithm for inserting into an already sorted list
-    @scheduled.insort(task)
+    Bisect.insort_right(@scheduled, task)
 
     # Update the timer
     check_timer
