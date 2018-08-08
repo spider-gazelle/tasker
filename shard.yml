@@ -6,3 +6,7 @@ dependencies:
     github: kostya/cron_parser
   bisect:
     github: spider-gazelle/bisect
+
+development_dependencies:
+  ameba:
+    github: veelenga/ameba
