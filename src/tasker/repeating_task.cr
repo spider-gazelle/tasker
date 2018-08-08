@@ -1,4 +1,3 @@
-
 abstract class Tasker::RepeatingTask(R) < Tasker::Task
   include Enumerable(R)
 

@@ -1,4 +1,3 @@
-
 abstract class Tasker::Task
   include Comparable(Tasker::Task)
 
@@ -19,12 +18,15 @@ abstract class Tasker::Task
 
   # required for comparable
   def <=>(task)
-      @next_scheduled.not_nil! <=> task.next_scheduled.not_nil!
+    @next_scheduled.not_nil! <=> task.next_scheduled.not_nil!
   end
 
   def cancel(msg = "Task canceled"); end
+
   def resume; end
+
   def trigger; end
+
   def get; end
 
   def schedule

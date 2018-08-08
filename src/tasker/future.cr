@@ -1,4 +1,3 @@
-
 class Tasker::Future(R) < Concurrent::Future(R)
   def initialize(block : -> R)
     super(run_immediately: false, &block)

@@ -31,23 +31,23 @@ class Tasker
 
   # Creates a once off task that occurs at a particular date and time
   def at(time : Time, &callback : -> _)
-      Tasker::OneShot.new(self, time, &callback).schedule.not_nil!
+    Tasker::OneShot.new(self, time, &callback).schedule.not_nil!
   end
 
   # Creates a once off task that occurs in the future
   def in(span : Time::Span, &callback : -> _)
-      Tasker::OneShot.new(self, span.from_now, &callback).schedule.not_nil!
+    Tasker::OneShot.new(self, span.from_now, &callback).schedule.not_nil!
   end
 
   # Creates repeating task
   # Schedules the repeat after executing the task
   def every(span : Time::Span, &callback : -> _)
-      Tasker::Repeat.new(self, span, &callback).schedule.not_nil!
+    Tasker::Repeat.new(self, span, &callback).schedule.not_nil!
   end
 
   # Create a repeating event that uses a CRON line to determine the trigger time
   def cron(line : String, timezone = Time::Location.local, &callback : -> _)
-      Tasker::CRON.new(self, line, timezone, &callback).schedule.not_nil!
+    Tasker::CRON.new(self, line, timezone, &callback).schedule.not_nil!
   end
 
   def schedule(task : Task)
@@ -105,10 +105,10 @@ class Tasker
 
     # Calculate the delay period
     seconds = if period < 0
-      0
-    else
-      period.to_f64 / 1000.0_f64
-    end
+                0
+              else
+                period.to_f64 / 1000.0_f64
+              end
 
     # Cancel any existing timers
     timer = @timer

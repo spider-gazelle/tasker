@@ -1,4 +1,3 @@
-
 class Tasker::Repeat(R) < Tasker::RepeatingTask(R)
   def initialize(scheduler, @period : Time::Span, &block : -> R)
     super(scheduler, &block)

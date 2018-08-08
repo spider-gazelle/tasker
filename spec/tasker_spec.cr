@@ -171,8 +171,8 @@ describe Tasker do
     ran = 0
     task = nil
     task = sched.every(1.milliseconds) do
-        ran += 1
-        task.not_nil!.cancel if ran > 3
+      ran += 1
+      task.not_nil!.cancel if ran > 3
     end
     channel = sched.no_more_tasks
     channel.empty?.should eq(true)

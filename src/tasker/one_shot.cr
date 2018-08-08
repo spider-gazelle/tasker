@@ -1,4 +1,3 @@
-
 class Tasker::OneShot(R) < Tasker::Task
   include Enumerable(R)
 
