@@ -13,7 +13,7 @@ abstract class Tasker::Task
   getter next_scheduled : Time?
 
   def next_epoch
-    @next_scheduled.not_nil!.epoch_ms
+    @next_scheduled.not_nil!.to_unix_ms
   end
 
   # required for comparable
