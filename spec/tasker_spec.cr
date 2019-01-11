@@ -73,7 +73,7 @@ describe Tasker do
 
     time = 2.milliseconds.from_now
     task1 = sched.at(time) { ran += 1 }
-    task2 = sched.at(time) { ran += 1 }
+    sched.at(time) { ran += 1 }
     sched.num_schedules.should eq(2)
 
     sleep 1.milliseconds
