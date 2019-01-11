@@ -23,30 +23,30 @@ class Tasker
     @no_more_tasks = Channel(Nil).new
   end
 
-  def self.instance
+  def self.instance : Tasker
     scheduler = @@default
     return scheduler if scheduler
     @@default = Tasker.new
   end
 
   # Creates a once off task that occurs at a particular date and time
-  def at(time : Time, &callback : -> _)
+  def at(time : Time, &callback : -> _) : Tasker::OneShot
     Tasker::OneShot.new(self, time, &callback).schedule.not_nil!
   end
 
   # Creates a once off task that occurs in the future
-  def in(span : Time::Span, &callback : -> _)
+  def in(span : Time::Span, &callback : -> _) : Tasker::OneShot
     Tasker::OneShot.new(self, span.from_now, &callback).schedule.not_nil!
   end
 
   # Creates repeating task
   # Schedules the repeat after executing the task
-  def every(span : Time::Span, &callback : -> _)
+  def every(span : Time::Span, &callback : -> _) : Tasker::Repeat
     Tasker::Repeat.new(self, span, &callback).schedule.not_nil!
   end
 
   # Create a repeating event that uses a CRON line to determine the trigger time
-  def cron(line : String, timezone = Time::Location.local, &callback : -> _)
+  def cron(line : String, timezone = Time::Location.local, &callback : -> _) : Tasker::CRON
     Tasker::CRON.new(self, line, timezone, &callback).schedule.not_nil!
   end
 
@@ -65,15 +65,21 @@ class Tasker
 
     # Update the timer
     check_timer
+    self
   end
 
   def cancel(task : Tasker::Task)
     @scheduled.delete(task)
     @schedules.delete(task)
     check_timer
+    self
   end
 
   def num_schedules
+    @scheduled.size
+  end
+
+  def size
     @scheduled.size
   end
 

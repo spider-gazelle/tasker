@@ -6,6 +6,40 @@ describe Tasker do
     Tasker.instance.cancel_all
   end
 
+  it "should work with sets" do
+    sched = Tasker.instance
+    ran = 0
+
+    time = 2.milliseconds.from_now
+    task1 = sched.at(time) { ran += 1 }
+    task2 = sched.at(time) { ran += 1 }
+
+    set = Set(Tasker::Task).new
+    set << task1
+    set << task2
+
+    set.size.should eq(2)
+
+    set.delete(task1)
+    set.size.should eq(1)
+  end
+
+  it "should work with arrays" do
+    sched = Tasker.instance
+    ran = 0
+
+    time = 2.milliseconds.from_now
+    task1 = sched.at(time) { ran += 1 }
+    task2 = sched.at(time) { ran += 1 }
+
+    set = [task1, task2]
+
+    set.size.should eq(2)
+
+    set.delete(task1)
+    set.size.should eq(1)
+  end
+
   it "should schedule a task to run in the future" do
     sched = Tasker.instance
     ran = false
@@ -17,6 +51,37 @@ describe Tasker do
 
     sleep 2.milliseconds
     ran.should eq(true)
+    sched.num_schedules.should eq(0)
+  end
+
+  it "should cancel a scheduled task" do
+    sched = Tasker.instance
+    ran = false
+    task = sched.at(2.milliseconds.from_now) { ran = true }
+
+    sleep 1.milliseconds
+    task.cancel
+
+    sleep 2.milliseconds
+    ran.should eq(false)
+    sched.num_schedules.should eq(0)
+  end
+
+  it "should cancel only the specified task" do
+    sched = Tasker.instance
+    ran = 0
+
+    time = 2.milliseconds.from_now
+    task1 = sched.at(time) { ran += 1 }
+    task2 = sched.at(time) { ran += 1 }
+    sched.num_schedules.should eq(2)
+
+    sleep 1.milliseconds
+    task1.cancel
+    sched.num_schedules.should eq(1)
+
+    sleep 2.milliseconds
+    ran.should eq(1)
     sched.num_schedules.should eq(0)
   end
 

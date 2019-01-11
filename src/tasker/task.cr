@@ -21,6 +21,10 @@ abstract class Tasker::Task
     @next_scheduled.not_nil! <=> task.next_scheduled.not_nil!
   end
 
+  def ==(task)
+    self.object_id == task.object_id
+  end
+
   def cancel(msg = "Task canceled"); end
 
   def resume; end
