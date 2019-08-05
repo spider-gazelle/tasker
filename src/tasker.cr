@@ -106,7 +106,7 @@ class Tasker
   private def update_timer
     time = @scheduled[0].next_epoch
     @next = time
-    now = Time.now.to_unix_ms
+    now = Time.utc.to_unix_ms
     period = time - now
 
     # Calculate the delay period

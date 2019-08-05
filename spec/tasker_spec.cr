@@ -249,13 +249,13 @@ describe Tasker do
   # If it takes too long then we fail it
   it "should schedule a CRON task" do
     sched = Tasker.instance
-    time = Time.now
+    time = Time.local
     minute = time.minute + 1
     minute = 0 if minute == 60
     ran = false
     task = sched.cron("#{minute} * * * *") { ran = true }
 
-    seconds = (60 - time.second) / 2
+    seconds = (60 - time.second) // 2
     sleep seconds
     sched.num_schedules.should eq(1)
     ran.should eq(false)

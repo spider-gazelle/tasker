@@ -12,7 +12,7 @@ class Tasker::CRON(R) < Tasker::RepeatingTask(R)
   def schedule
     return if @future.state == Future::State::Canceled
     @last_scheduled = @next_scheduled
-    @next_scheduled = @cron.next(Time.now(@location))
+    @next_scheduled = @cron.next(Time.local(@location))
     @scheduler.schedule(self)
     self
   end

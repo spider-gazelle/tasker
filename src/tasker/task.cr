@@ -2,7 +2,7 @@ abstract class Tasker::Task
   include Comparable(Tasker::Task)
 
   def initialize(@scheduler)
-    @created = Time.now
+    @created = Time.utc
     @trigger_count = 0_i64
   end
 
@@ -32,6 +32,10 @@ abstract class Tasker::Task
   def trigger; end
 
   def get; end
+
+  def each
+    yield get
+  end
 
   def schedule
     @scheduler.schedule(self)

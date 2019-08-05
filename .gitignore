@@ -6,3 +6,4 @@ app
 *.dwarf
 
 *.lock
+bin/ameba
