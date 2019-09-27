@@ -240,7 +240,6 @@ describe Tasker do
       task.not_nil!.cancel if ran > 3
     end
     channel = sched.no_more_tasks
-    channel.empty?.should eq(true)
     channel.receive
     ran.should eq(4)
   end
