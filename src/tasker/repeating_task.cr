@@ -30,7 +30,7 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
 
   def trigger
     return if @future.state >= Future::State::Running
-    spawn do
+    spawn(same_thread: true) do
       @future.wait_complete
       if @future.state != Future::State::Canceled
         next_future

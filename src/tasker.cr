@@ -137,7 +137,7 @@ class Tasker
     # This is the task callback
     task.trigger
   ensure
-    spawn { check_timer }
+    spawn(same_thread: true) { check_timer }
   end
 end
 
