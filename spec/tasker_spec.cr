@@ -117,7 +117,7 @@ describe Tasker do
 
     # Test cancelation
     task = sched.at(2.milliseconds.from_now) { true }
-    spawn { task.cancel }
+    spawn(same_thread: true) { task.cancel }
     begin
       task.get
       raise "failed"
@@ -202,7 +202,7 @@ describe Tasker do
     task.get.should eq 5
 
     # Test cancelation
-    spawn { task.cancel }
+    spawn(same_thread: true) { task.cancel }
     begin
       task.get
       raise "failed"
