@@ -1,10 +1,11 @@
 require "bisect"
+require "future"
 
 class Tasker
   @@default : Tasker?
 
   @sync_period : Float64
-  @timer : Concurrent::Future(Nil)?
+  @timer : ::Future::Compute(Nil)?
   @no_more_tasks : Channel(Nil)?
 
   def initialize(sync_period = 2.minutes.total_milliseconds)

@@ -12,7 +12,7 @@ Usage
 
 Grab an instance of the scheduler
 
-```ruby
+```crystal
     require "tasker"
 
     # Grab the default scheduler - really only need a single instance per application
@@ -22,25 +22,25 @@ Grab an instance of the scheduler
 
 At a time in the future
 
-```ruby
+```crystal
     schedule.at(20.seconds.from_now) { perform_action }
 
     # If you would like the value of that result
-    # returns value or raises error - a Concurrent::Future
+    # returns value or raises error - a Future
     schedule.at(20.seconds.from_now) { perform_action }.get
 ```
 
 
 After some period of time
 
-```ruby
+```crystal
     schedule.in(20.seconds) { perform_action }
 ```
 
 
 Repeating every time period
 
-```ruby
+```crystal
     task = schedule.every(2.milliseconds) { perform_action }
     # Canceling stops the schedule from running
     task.cancel
@@ -50,7 +50,7 @@ Repeating every time period
 
 You can grab the values of repeating schedules too
 
-```ruby
+```crystal
     tick = 0
     task = schedule.every(2.milliseconds) { tick += 1; tick }
 
@@ -70,7 +70,7 @@ You can grab the values of repeating schedules too
 
 Running a CRON job
 
-```ruby
+```crystal
     # Run a job at 7:30am every day
     schedule.cron("30 7 * * *") { perform_action }
 

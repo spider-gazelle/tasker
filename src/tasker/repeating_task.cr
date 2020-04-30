@@ -49,6 +49,6 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
     while @future.state != Future::State::Canceled
       yield @future.get
     end
-  rescue error : Concurrent::CanceledError
+  rescue error : ::Future::CanceledError
   end
 end
