@@ -1,11 +1,9 @@
 name: tasker
-version: 1.3.0
+version: 2.0.0
 
 dependencies:
   cron_parser:
     github: kostya/cron_parser
-  bisect:
-    github: spider-gazelle/bisect
   future:
     github: crystal-community/future.cr
 

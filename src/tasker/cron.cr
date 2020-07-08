@@ -1,8 +1,8 @@
 require "cron_parser"
 
 class Tasker::CRON(R) < Tasker::RepeatingTask(R)
-  def initialize(scheduler, cron, @location : Time::Location, &block : -> R)
-    super(scheduler, &block)
+  def initialize(cron, @location : Time::Location, &block : -> R)
+    super(&block)
     @cron = CronParser.new(cron)
   end
 
@@ -13,7 +13,6 @@ class Tasker::CRON(R) < Tasker::RepeatingTask(R)
     return if @future.state == Future::State::Canceled
     @last_scheduled = @next_scheduled
     @next_scheduled = @cron.next(Time.local(@location))
-    @scheduler.schedule(self)
-    self
+    super
   end
 end

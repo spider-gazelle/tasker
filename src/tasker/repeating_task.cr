@@ -1,8 +1,7 @@
 abstract class Tasker::RepeatingTask(R) < Tasker::Task
   include Enumerable(R)
 
-  def initialize(@scheduler, &block : -> R)
-    super(scheduler)
+  def initialize(&block : -> R)
     @callback = block
     @future = Tasker::Future(R).new(@callback)
   end
@@ -16,7 +15,7 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
   def cancel(msg = "Task canceled")
     return if @future.state == Future::State::Canceled
     @next_scheduled = nil
-    @scheduler.cancel(self)
+    super(msg)
     @future.cancel(msg)
   end
 
@@ -30,15 +29,13 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
 
   def trigger
     return if @future.state >= Future::State::Running
-    spawn(same_thread: true) do
-      @future.wait_complete
-      if @future.state != Future::State::Canceled
-        next_future
-        schedule
-      end
-    end
     @trigger_count += 1
     @future.trigger
+  ensure
+    if @future.state != Future::State::Canceled
+      next_future
+      schedule
+    end
   end
 
   def get

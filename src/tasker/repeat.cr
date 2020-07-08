@@ -1,6 +1,6 @@
 class Tasker::Repeat(R) < Tasker::RepeatingTask(R)
-  def initialize(scheduler, @period : Time::Span, &block : -> R)
-    super(scheduler, &block)
+  def initialize(@period : Time::Span, &block : -> R)
+    super(&block)
   end
 
   getter next_scheduled : Time?
@@ -9,7 +9,7 @@ class Tasker::Repeat(R) < Tasker::RepeatingTask(R)
     return if @future.state == Future::State::Canceled
     @last_scheduled = @next_scheduled
     @next_scheduled = @period.from_now
-    @scheduler.schedule(self)
+    super
     self
   end
 end

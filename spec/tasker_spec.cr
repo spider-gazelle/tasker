@@ -2,8 +2,11 @@ require "spec"
 require "../src/tasker"
 
 describe Tasker do
+  tasks = [] of Tasker::Task
+
   Spec.before_each do
-    Tasker.instance.cancel_all
+    tasks.each &.cancel
+    tasks.clear
   end
 
   it "should work with sets" do
@@ -17,6 +20,9 @@ describe Tasker do
     set = Set(Tasker::Task).new
     set << task1
     set << task2
+
+    tasks << task1
+    tasks << task2
 
     set.size.should eq(2)
 
@@ -32,6 +38,8 @@ describe Tasker do
     task1 = sched.at(time) { ran += 1 }
     task2 = sched.at(time) { ran += 1 }
 
+    tasks << task1
+    tasks << task2
     set = [task1, task2]
 
     set.size.should eq(2)
@@ -43,28 +51,26 @@ describe Tasker do
   it "should schedule a task to run in the future" do
     sched = Tasker.instance
     ran = false
-    sched.at(2.milliseconds.from_now) { ran = true }
+    tasks << sched.at(2.milliseconds.from_now) { ran = true }
 
     sleep 1.milliseconds
-    sched.num_schedules.should eq(1)
     ran.should eq(false)
 
     sleep 2.milliseconds
     ran.should eq(true)
-    sched.num_schedules.should eq(0)
   end
 
   it "should cancel a scheduled task" do
     sched = Tasker.instance
     ran = false
     task = sched.at(2.milliseconds.from_now) { ran = true }
+    tasks << task
 
     sleep 1.milliseconds
     task.cancel
 
     sleep 2.milliseconds
     ran.should eq(false)
-    sched.num_schedules.should eq(0)
   end
 
   it "should cancel only the specified task" do
@@ -73,30 +79,26 @@ describe Tasker do
 
     time = 2.milliseconds.from_now
     task1 = sched.at(time) { ran += 1 }
-    sched.at(time) { ran += 1 }
-    sched.num_schedules.should eq(2)
+    tasks << sched.at(time) { ran += 1 }
+    tasks << task1
 
     sleep 1.milliseconds
     task1.cancel
-    sched.num_schedules.should eq(1)
 
     sleep 2.milliseconds
     ran.should eq(1)
-    sched.num_schedules.should eq(0)
   end
 
   it "should schedule a task to run after a period of time" do
     sched = Tasker.instance
     ran = false
-    sched.in(2.milliseconds) { ran = true }
+    tasks << sched.in(2.milliseconds) { ran = true }
 
     sleep 1.milliseconds
-    sched.num_schedules.should eq(1)
     ran.should eq(false)
 
     sleep 2.milliseconds
     ran.should eq(true)
-    sched.num_schedules.should eq(0)
   end
 
   it "should be possible to obtain the return value of the task" do
@@ -104,10 +106,12 @@ describe Tasker do
 
     # Test execution
     task = sched.at(2.milliseconds.from_now) { true }
+    tasks << task
     task.get.should eq true
 
     # Test failure
     task = sched.at(2.milliseconds.from_now) { raise "was error" }
+    tasks << task
     begin
       task.get
       raise "not here"
@@ -117,6 +121,7 @@ describe Tasker do
 
     # Test cancelation
     task = sched.at(2.milliseconds.from_now) { true }
+    tasks << task
     spawn(same_thread: true) { task.cancel }
     begin
       task.get
@@ -130,22 +135,19 @@ describe Tasker do
     sched = Tasker.instance
     ran = 0
     task = sched.every(2.milliseconds) { ran += 1 }
+    tasks << task
 
     sleep 1.milliseconds
-    sched.num_schedules.should eq(1)
     ran.should eq(0)
 
     sleep 2.milliseconds
     ran.should eq(1)
-    sched.num_schedules.should eq(1)
 
     sleep 2.milliseconds
     ran.should eq(2)
-    sched.num_schedules.should eq(1)
 
     sleep 2.milliseconds
     ran.should eq(3)
-    sched.num_schedules.should eq(1)
 
     task.cancel
   end
@@ -154,28 +156,23 @@ describe Tasker do
     sched = Tasker.instance
     ran = 0
     task = sched.every(2.milliseconds) { ran += 1; ran }
+    tasks << task
 
     sleep 3.milliseconds
     ran.should eq(1)
-    sched.num_schedules.should eq(1)
 
     sleep 2.milliseconds
     ran.should eq(2)
-    sched.num_schedules.should eq(1)
 
     task.cancel
-    sched.num_schedules.should eq(0)
 
     sleep 2.milliseconds
     ran.should eq(2)
-    sched.num_schedules.should eq(0)
 
     task.resume
-    sched.num_schedules.should eq(1)
 
     sleep 3.milliseconds
     ran.should eq(3)
-    sched.num_schedules.should eq(1)
 
     task.cancel
   end
@@ -188,6 +185,8 @@ describe Tasker do
       raise "some error" if ran == 4
       ran
     end
+
+    tasks << task
 
     # Test execution
     task.get.should eq 1
@@ -220,6 +219,8 @@ describe Tasker do
       ran
     end
 
+    tasks << task
+
     results = [] of Int32
     begin
       task.each { |result| results << result }
@@ -231,19 +232,6 @@ describe Tasker do
     task.cancel
   end
 
-  it "should signal when there are no more tasks to process" do
-    sched = Tasker.new
-    ran = 0
-    task = nil
-    task = sched.every(1.milliseconds) do
-      ran += 1
-      task.not_nil!.cancel if ran > 3
-    end
-    channel = sched.no_more_tasks
-    channel.receive
-    ran.should eq(4)
-  end
-
   # We calculate what the next minute is and then wait for it to roll by
   # If it takes too long then we fail it
   it "should schedule a CRON task" do
@@ -253,15 +241,14 @@ describe Tasker do
     minute = 0 if minute == 60
     ran = false
     task = sched.cron("#{minute} * * * *") { ran = true }
+    tasks << task
 
     seconds = (60 - time.second) // 2
     sleep seconds
-    sched.num_schedules.should eq(1)
     ran.should eq(false)
 
     sleep seconds + 1
     ran.should eq(true)
-    sched.num_schedules.should eq(1)
 
     task.cancel
   end

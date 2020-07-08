@@ -1,13 +1,14 @@
 abstract class Tasker::Task
   include Comparable(Tasker::Task)
 
-  def initialize(@scheduler)
+  def initialize
     @created = Time.utc
     @trigger_count = 0_i64
   end
 
+  @timer : Timer?
+
   getter created : Time
-  getter scheduler : Tasker
   getter trigger_count : Int64
   getter last_scheduled : Time?
   getter next_scheduled : Time?
@@ -25,7 +26,10 @@ abstract class Tasker::Task
     self.object_id == task.object_id
   end
 
-  def cancel(msg = "Task canceled"); end
+  def cancel(msg = "Task canceled") : Nil
+    @timer.try &.cancel
+    @timer = nil
+  end
 
   def resume; end
 
@@ -37,8 +41,29 @@ abstract class Tasker::Task
     yield get
   end
 
+  SYNC_PERIOD = 2.minutes.total_milliseconds / 1000.0_f64
+
   def schedule
-    @scheduler.schedule(self)
+    now = Time.utc.to_unix_ms
+    time = next_epoch
+    period = time - now
+
+    # Calculate the delay period
+    seconds = if period < 0
+                0
+              else
+                period.to_f64 / 1000.0_f64
+              end
+
+    timer = if seconds > SYNC_PERIOD
+              # We don't want to sleep for 3 days (for example) as the timer won't be accurate
+              # Want to sync with the realtime clock every now and then
+              @timer = Timer.new(SYNC_PERIOD) { schedule; nil }
+            else
+              @timer = Timer.new(seconds) { trigger; nil }
+            end
+
+    timer.start_timer
     self
   end
 end
