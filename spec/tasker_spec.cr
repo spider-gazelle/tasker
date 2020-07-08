@@ -166,7 +166,7 @@ describe Tasker do
 
     task.cancel
 
-    sleep 2.milliseconds
+    sleep 3.milliseconds
     ran.should eq(2)
 
     task.resume
