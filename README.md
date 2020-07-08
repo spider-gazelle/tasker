@@ -10,38 +10,28 @@ Allows you to schedule tasks to run in the future and obtain the results.
 Usage
 =====
 
-Grab an instance of the scheduler
-
-```crystal
-    require "tasker"
-
-    # Grab the default scheduler - really only need a single instance per application
-    schedule = Tasker.instance
-```
-
-
 At a time in the future
 
 ```crystal
-    schedule.at(20.seconds.from_now) { perform_action }
+    Tasker.at(20.seconds.from_now) { perform_action }
 
     # If you would like the value of that result
     # returns value or raises error - a Future
-    schedule.at(20.seconds.from_now) { perform_action }.get
+    Tasker.at(20.seconds.from_now) { perform_action }.get
 ```
 
 
 After some period of time
 
 ```crystal
-    schedule.in(20.seconds) { perform_action }
+    Tasker.in(20.seconds) { perform_action }
 ```
 
 
 Repeating every time period
 
 ```crystal
-    task = schedule.every(2.milliseconds) { perform_action }
+    task = Tasker.every(2.milliseconds) { perform_action }
     # Canceling stops the schedule from running
     task.cancel
     # Resume can be used to restart a canceled schedule
@@ -52,7 +42,7 @@ You can grab the values of repeating schedules too
 
 ```crystal
     tick = 0
-    task = schedule.every(2.milliseconds) { tick += 1; tick }
+    task = Tasker.every(2.milliseconds) { tick += 1; tick }
 
     # Calling get will pause until after the next schedule has run
     task.get == 1 # => true
@@ -72,11 +62,11 @@ Running a CRON job
 
 ```crystal
     # Run a job at 7:30am every day
-    schedule.cron("30 7 * * *") { perform_action }
+    Tasker.cron("30 7 * * *") { perform_action }
 
     # For running in a job in a particular time zone:
     berlin = Time::Location.load("Europe/Berlin")
-    schedule.cron("30 7 * * *", berlin) { perform_action }
+    Tasker.cron("30 7 * * *", berlin) { perform_action }
 
     # Also supports pause, resume and enumeration
 ```
