@@ -2,8 +2,8 @@ require "cron_parser"
 
 class Tasker::CRON(R) < Tasker::RepeatingTask(R)
   def initialize(cron, @location : Time::Location, &block : -> R)
-    super(&block)
     @cron = CronParser.new(cron)
+    super(&block)
   end
 
   property location : Time::Location

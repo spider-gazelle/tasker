@@ -4,6 +4,8 @@ class Tasker::OneShot(R) < Tasker::Task
   def initialize(at, &block : -> R)
     @next_scheduled = at
     @future = Tasker::Future(R).new(block)
+    @created = Time.utc
+    @trigger_count = 0_i64
   end
 
   getter next_scheduled : Time?

@@ -4,6 +4,7 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
   def initialize(&block : -> R)
     @callback = block
     @future = Tasker::Future(R).new(@callback)
+    super
   end
 
   getter next_scheduled : Time?
