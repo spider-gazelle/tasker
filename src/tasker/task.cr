@@ -55,14 +55,7 @@ abstract class Tasker::Task
                 period.to_f64 / 1000.0_f64
               end
 
-    timer = if seconds > SYNC_PERIOD
-              # We don't want to sleep for 3 days (for example) as the timer won't be accurate
-              # Want to sync with the realtime clock every now and then
-              @timer = Timer.new(SYNC_PERIOD) { schedule; nil }
-            else
-              @timer = Timer.new(seconds) { trigger; nil }
-            end
-
+    @timer = timer = Timer.new(seconds) { trigger; nil }
     timer.start_timer
     self
   end
