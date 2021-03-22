@@ -89,6 +89,18 @@ describe Tasker do
     ran.should eq(1)
   end
 
+  it "should run both a single task and a repeating task" do
+    sched = Tasker.instance
+    ran = 0
+
+    sched.in(2.milliseconds) { ran += 1 }
+    task2 = sched.every(4.milliseconds) { ran += 1 }
+
+    sleep 10.milliseconds
+    task2.cancel
+    ran.should eq(3)
+  end
+
   it "should schedule a task to run after a period of time" do
     sched = Tasker.instance
     ran = false
