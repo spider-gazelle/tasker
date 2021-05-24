@@ -8,16 +8,19 @@ class Timer
     end
   end
 
-  def start_timer
+  def start_timer : Nil
     Fiber.current.enqueue
     @fiber.resume
   end
 
-  def cancel
+  def cancel : Bool
+    return true if @cancelled
     @cancelled = true
-    if !@fiber.dead? && @fiber.resumable?
-      Fiber.current.enqueue
+    current = Fiber.current
+    if current != @fiber && !@fiber.dead? && @fiber.resumable?
+      current.enqueue
       @fiber.resume
     end
+    @cancelled
   end
 end
