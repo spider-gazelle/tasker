@@ -16,9 +16,8 @@ class Timer
   def cancel : Bool
     return true if @cancelled
     @cancelled = true
-    current = Fiber.current
-    if current != @fiber && !@fiber.dead? && @fiber.resumable?
-      current.enqueue
+    if !@fiber.dead? && @fiber.resumable?
+      Fiber.current.enqueue
       @fiber.resume
     end
     @cancelled
