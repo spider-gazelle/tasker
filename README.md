@@ -1,6 +1,6 @@
 # Tasker
 
-[![Build Status](https://travis-ci.org/spider-gazelle/tasker.svg?branch=master)](https://travis-ci.org/spider-gazelle/tasker)
+[![Build Status](https://github.com/spider-gazelle/tasker/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/spider-gazelle/tasker/actions/workflows/CI.yml)
 
 
 A high precision scheduler for crystal lang.

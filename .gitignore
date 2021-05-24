@@ -1,9 +1,10 @@
 doc
 lib
+bin
 .crystal
 .shards
 app
 *.dwarf
-
 *.lock
 bin/ameba
+*.DS_Store
