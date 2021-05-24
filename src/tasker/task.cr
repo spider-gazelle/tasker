@@ -50,7 +50,7 @@ abstract class Tasker::Task
 
     # Calculate the delay period
     seconds = if period < 0
-                0
+                0.0
               else
                 period.to_f64 / 1000.0_f64
               end
