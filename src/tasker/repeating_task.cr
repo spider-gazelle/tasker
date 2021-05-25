@@ -14,9 +14,9 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
   end
 
   def cancel(msg = "Task canceled")
+    super(msg)
     return if @future.state == Future::State::Canceled
     @next_scheduled = nil
-    super(msg)
     @future.cancel(msg)
   end
 
