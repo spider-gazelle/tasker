@@ -8,7 +8,7 @@ class Timer
   def start_timer : Nil
     Log.trace { "timer start called, id: #{self.object_id}" }
     spawn(same_thread: true) do
-      Log.trace { "timer waiting, id: #{self.object_id}" }
+      Log.trace { "timer waiting for #{@sleep_for} seconds, id: #{self.object_id}" }
       select
       when @cancel.receive
         Log.trace { "timer cancelled, id: #{self.object_id}" }

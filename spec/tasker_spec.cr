@@ -5,10 +5,15 @@ describe Tasker do
   tasks = [] of Tasker::Task
 
   Spec.before_each do
-    tasks.each &.cancel
-    Fiber.yield
-    tasks.clear
-    GC.collect
+    begin
+      tasks.each &.cancel
+      Fiber.yield
+      tasks.clear
+      GC.collect
+    rescue error
+      tasks = [] of Tasker::Task
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    end
   end
 
   it "should work with sets" do
@@ -149,46 +154,56 @@ describe Tasker do
     sched = Tasker.instance
     repeat_count = 0
     task = sched.every(4.milliseconds) { repeat_count += 1 }
-    tasks << task
 
-    sleep 1.milliseconds
-    repeat_count.should eq(0)
+    begin
+      tasks << task
 
-    sleep 5.milliseconds
-    repeat_count.should eq(1)
+      sleep 1.milliseconds
+      repeat_count.should eq(0)
 
-    sleep 4.milliseconds
-    repeat_count.should eq(2)
+      sleep 5.milliseconds
+      repeat_count.should eq(1)
 
-    sleep 4.milliseconds
-    repeat_count.should eq(3)
+      sleep 4.milliseconds
+      repeat_count.should eq(2)
 
-    task.cancel
+      sleep 4.milliseconds
+      repeat_count.should eq(3)
+    rescue error
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    ensure
+      task.cancel
+    end
   end
 
   it "should pause and resume a repeating task" do
     sched = Tasker.instance
     run_count = 0
     task = sched.every(4.milliseconds) { run_count += 1; run_count }
-    tasks << task
 
-    sleep 5.milliseconds
-    run_count.should eq(1)
+    begin
+      tasks << task
 
-    sleep 4.milliseconds
-    run_count.should eq(2)
+      sleep 5.milliseconds
+      run_count.should eq(1)
 
-    task.cancel
+      sleep 4.milliseconds
+      run_count.should eq(2)
 
-    sleep 4.milliseconds
-    run_count.should eq(2)
+      task.cancel
 
-    task.resume
+      sleep 4.milliseconds
+      run_count.should eq(2)
 
-    sleep 5.milliseconds
-    run_count.should eq(3)
+      task.resume
 
-    task.cancel
+      sleep 5.milliseconds
+      run_count.should eq(3)
+    rescue error
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    ensure
+      task.cancel
+    end
   end
 
   it "should be possible to obtain the next value of a repeating" do
@@ -200,27 +215,33 @@ describe Tasker do
       ran
     end
 
-    tasks << task
-
-    # Test execution
-    task.get.should eq 1
-    task.get.should eq 2
-    task.get.should eq 3
     begin
-      task.get.should eq 4
-      raise "failed"
-    rescue error
-      error.message.should eq "some error"
-    end
-    task.get.should eq 5
+      tasks << task
 
-    # Test cancelation
-    spawn(same_thread: true) { task.cancel }
-    begin
-      task.get
-      raise "failed"
+      # Test execution
+      task.get.should eq 1
+      task.get.should eq 2
+      task.get.should eq 3
+      begin
+        task.get.should eq 4
+        raise "failed"
+      rescue error
+        error.message.should eq "some error"
+      end
+      task.get.should eq 5
+
+      # Test cancelation
+      spawn(same_thread: true) { task.cancel }
+      begin
+        task.get
+        raise "failed"
+      rescue error
+        error.message.should eq "Task canceled"
+      end
     rescue error
-      error.message.should eq "Task canceled"
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    ensure
+      task.cancel
     end
   end
 
@@ -233,17 +254,22 @@ describe Tasker do
       ran
     end
 
-    tasks << task
-
-    results = [] of Int32
     begin
-      task.each { |result| results << result }
-      raise "failed with #{results}"
+      tasks << task
+
+      results = [] of Int32
+      begin
+        task.each { |result| results << result }
+        raise "failed with #{results}"
+      rescue error
+        error.message.should eq "other error"
+      end
+      results.should eq [1, 2, 3]
     rescue error
-      error.message.should eq "other error"
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    ensure
+      task.cancel
     end
-    results.should eq [1, 2, 3]
-    task.cancel
   end
 
   # We calculate what the next minute is and then wait for it to roll by
@@ -255,15 +281,19 @@ describe Tasker do
     minute = 0 if minute == 60
     ran = 0
     task = sched.cron("#{minute} * * * *") { ran = 1 }
-    tasks << task
+    begin
+      tasks << task
 
-    seconds = (60 - time.second) // 2
-    sleep seconds
-    ran.should eq(0)
+      seconds = (60 - time.second) // 2
+      sleep seconds
+      ran.should eq(0)
 
-    sleep seconds + 1
-    ran.should eq(1)
-
-    task.cancel
+      sleep seconds + 1
+      ran.should eq(1)
+    rescue error
+      puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
+    ensure
+      task.cancel
+    end
   end
 end
