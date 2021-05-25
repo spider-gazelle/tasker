@@ -19,4 +19,4 @@ jobs:
     - name: Format
       run: crystal tool format --check
     - name: Run tests
-      run: crystal spec --error-trace
+      run: crystal spec -v --error-trace
