@@ -6,7 +6,7 @@ class Timer
   end
 
   def start_timer : Nil
-    spawn do
+    spawn(same_thread: true) do
       select
       when @cancel.receive
       when timeout(@sleep_for.seconds)
