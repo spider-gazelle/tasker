@@ -147,46 +147,46 @@ describe Tasker do
 
   it "should schedule a repeating task" do
     sched = Tasker.instance
-    ran = 0
-    task = sched.every(4.milliseconds) { ran += 1 }
+    repeat_count = 0
+    task = sched.every(4.milliseconds) { repeat_count += 1 }
     tasks << task
 
     sleep 1.milliseconds
-    ran.should eq(0)
+    repeat_count.should eq(0)
+
+    sleep 5.milliseconds
+    repeat_count.should eq(1)
 
     sleep 4.milliseconds
-    ran.should eq(1)
+    repeat_count.should eq(2)
 
     sleep 4.milliseconds
-    ran.should eq(2)
-
-    sleep 4.milliseconds
-    ran.should eq(3)
+    repeat_count.should eq(3)
 
     task.cancel
   end
 
   it "should pause and resume a repeating task" do
     sched = Tasker.instance
-    ran = 0
-    task = sched.every(4.milliseconds) { ran += 1; ran }
+    run_count = 0
+    task = sched.every(4.milliseconds) { run_count += 1; run_count }
     tasks << task
 
     sleep 5.milliseconds
-    ran.should eq(1)
+    run_count.should eq(1)
 
     sleep 4.milliseconds
-    ran.should eq(2)
+    run_count.should eq(2)
 
     task.cancel
 
     sleep 4.milliseconds
-    ran.should eq(2)
+    run_count.should eq(2)
 
     task.resume
 
     sleep 5.milliseconds
-    ran.should eq(3)
+    run_count.should eq(3)
 
     task.cancel
   end
