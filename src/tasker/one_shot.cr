@@ -31,7 +31,7 @@ class Tasker::OneShot(R) < Tasker::Task
     @future.get
   end
 
-  def each
-    yield @future.get
+  def resume
+    raise "only repeating tasks can be resumed"
   end
 end

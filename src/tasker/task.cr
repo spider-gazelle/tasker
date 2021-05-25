@@ -31,11 +31,9 @@ abstract class Tasker::Task
     @timer = nil
   end
 
-  def resume; end
-
-  def trigger; end
-
-  def get; end
+  abstract def resume
+  abstract def trigger
+  abstract def get
 
   def each
     yield get
