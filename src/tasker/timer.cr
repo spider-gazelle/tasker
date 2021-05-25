@@ -1,8 +1,7 @@
-# a class designed to allow sleeping fibers to be cancelled
 class Timer
   def initialize(@sleep_for : Float64, &@callback : -> _)
     @cancelled = false
-    @cancel = Channel(Bool).new
+    @cancel = Channel(Bool).new(1)
   end
 
   def start_timer : Nil
