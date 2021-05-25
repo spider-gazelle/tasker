@@ -1,6 +1,3 @@
-require "future"
-require "./tasker/timer"
-
 class Tasker
   module Methods
     # Creates a once off task that occurs at a particular date and time
@@ -37,9 +34,4 @@ class Tasker
   extend Methods
 end
 
-require "./tasker/task"
-require "./tasker/future"
-require "./tasker/repeating_task"
-require "./tasker/one_shot"
-require "./tasker/repeat"
-require "./tasker/cron"
+require "./tasker/*"

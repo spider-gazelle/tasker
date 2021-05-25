@@ -6,7 +6,9 @@ describe Tasker do
 
   Spec.before_each do
     tasks.each &.cancel
+    Fiber.yield
     tasks.clear
+    GC.collect
   end
 
   it "should work with sets" do
@@ -50,27 +52,27 @@ describe Tasker do
 
   it "should schedule a task to run in the future" do
     sched = Tasker.instance
-    ran = false
-    tasks << sched.at(4.milliseconds.from_now) { ran = true }
+    ran = 0
+    tasks << sched.at(4.milliseconds.from_now) { ran = 1 }
 
     sleep 2.milliseconds
-    ran.should eq(false)
+    ran.should eq(0)
 
     sleep 3.milliseconds
-    ran.should eq(true)
+    ran.should eq(1)
   end
 
   it "should cancel a scheduled task" do
     sched = Tasker.instance
-    ran = false
-    task = sched.at(4.milliseconds.from_now) { ran = true }
+    ran = 0
+    task = sched.at(4.milliseconds.from_now) { ran = 1 }
     tasks << task
 
     sleep 2.milliseconds
     task.cancel
 
     sleep 3.milliseconds
-    ran.should eq(false)
+    ran.should eq(0)
   end
 
   it "should cancel only the specified task" do
@@ -103,14 +105,14 @@ describe Tasker do
 
   it "should schedule a task to run after a period of time" do
     sched = Tasker.instance
-    ran = false
-    tasks << sched.in(4.milliseconds) { ran = true }
+    ran = 0
+    tasks << sched.in(4.milliseconds) { ran = 1 }
 
     sleep 2.milliseconds
-    ran.should eq(false)
+    ran.should eq(0)
 
     sleep 3.milliseconds
-    ran.should eq(true)
+    ran.should eq(1)
   end
 
   it "should be possible to obtain the return value of the task" do
@@ -251,16 +253,16 @@ describe Tasker do
     time = Time.local
     minute = time.minute + 1
     minute = 0 if minute == 60
-    ran = false
-    task = sched.cron("#{minute} * * * *") { ran = true }
+    ran = 0
+    task = sched.cron("#{minute} * * * *") { ran = 1 }
     tasks << task
 
     seconds = (60 - time.second) // 2
     sleep seconds
-    ran.should eq(false)
+    ran.should eq(0)
 
     sleep seconds + 1
-    ran.should eq(true)
+    ran.should eq(1)
 
     task.cancel
   end

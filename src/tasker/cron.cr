@@ -1,4 +1,5 @@
 require "cron_parser"
+require "./repeating_task"
 
 class Tasker::CRON(R) < Tasker::RepeatingTask(R)
   def initialize(cron, @location : Time::Location, &block : -> R)

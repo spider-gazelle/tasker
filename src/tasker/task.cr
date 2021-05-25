@@ -1,3 +1,5 @@
+require "./timer"
+
 abstract class Tasker::Task
   include Comparable(Tasker::Task)
 

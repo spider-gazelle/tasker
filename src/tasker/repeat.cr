@@ -1,3 +1,5 @@
+require "./repeating_task"
+
 class Tasker::Repeat(R) < Tasker::RepeatingTask(R)
   def initialize(@period : Time::Span, &block : -> R)
     super(&block)
