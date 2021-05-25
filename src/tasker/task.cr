@@ -44,18 +44,21 @@ abstract class Tasker::Task
   SYNC_PERIOD = 2.minutes.total_milliseconds / 1000.0_f64
 
   def schedule
+    Log.trace { "task scheduling timer, id: #{self.object_id}" }
+
     now = Time.utc.to_unix_ms
     time = next_epoch
     period = time - now
 
     # Calculate the delay period
     seconds = if period < 0
+                Log.trace { "scheduled for the past, id: #{self.object_id}" }
                 0.0
               else
                 period.to_f64 / 1000.0_f64
               end
 
-    @timer = timer = Timer.new(seconds) { trigger; nil }
+    @timer = timer = Timer.new(seconds) { trigger }
     timer.start_timer
     self
   end

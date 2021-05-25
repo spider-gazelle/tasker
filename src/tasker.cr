@@ -1,4 +1,8 @@
+require "log"
+
 class Tasker
+  Log = ::Log.for("tasker")
+
   module Methods
     # Creates a once off task that occurs at a particular date and time
     def at(time : Time, &callback : -> _) : Tasker::OneShot

@@ -6,10 +6,14 @@ class Timer
   end
 
   def start_timer : Nil
+    Log.trace { "timer start called, id: #{self.object_id}" }
     spawn(same_thread: true) do
+      Log.trace { "timer waiting, id: #{self.object_id}" }
       select
       when @cancel.receive
+        Log.trace { "timer cancelled, id: #{self.object_id}" }
       when timeout(@sleep_for.seconds)
+        Log.trace { "timer fired, id: #{self.object_id}" }
         @cancelled = true
         @callback.call
       end
@@ -17,10 +21,10 @@ class Timer
     Fiber.yield
   end
 
-  def cancel : Bool
-    return true if @cancelled
+  def cancel : Nil
+    return if @cancelled
+    Log.trace { "timer cancel requested, id: #{self.object_id}" }
     @cancelled = true
     @cancel.send(true)
-    true
   end
 end
