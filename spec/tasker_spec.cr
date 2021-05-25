@@ -3,6 +3,7 @@ require "../src/tasker"
 
 describe Tasker do
   tasks = [] of Tasker::Task
+  ran = 0
 
   Spec.before_each do
     begin
@@ -14,15 +15,15 @@ describe Tasker do
       tasks = [] of Tasker::Task
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
     end
+    ran = 0
   end
 
   it "should work with sets" do
     sched = Tasker.instance
-    ran = 0
 
     time = 2.milliseconds.from_now
-    task1 = sched.at(time) { ran += 1 }
-    task2 = sched.at(time) { ran += 1 }
+    task1 = sched.at(time) { nil }
+    task2 = sched.at(time) { nil }
 
     set = Set(Tasker::Task).new
     set << task1
@@ -39,11 +40,10 @@ describe Tasker do
 
   it "should work with arrays" do
     sched = Tasker.instance
-    ran = 0
 
     time = 2.milliseconds.from_now
-    task1 = sched.at(time) { ran += 1 }
-    task2 = sched.at(time) { ran += 1 }
+    task1 = sched.at(time) { nil }
+    task2 = sched.at(time) { nil }
 
     tasks << task1
     tasks << task2

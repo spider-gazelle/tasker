@@ -26,5 +26,6 @@ class Timer
     Log.trace { "timer cancel requested, id: #{self.object_id}" }
     @cancelled = true
     @cancel.send(true)
+    Fiber.yield
   end
 end
