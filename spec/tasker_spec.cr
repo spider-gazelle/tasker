@@ -188,25 +188,25 @@ describe Tasker do
   it "should pause and resume a repeating task" do
     sched = Tasker.instance
     run_count = 0
-    task = sched.every(40.milliseconds) { run_count += 1; run_count }
+    task = sched.every(80.milliseconds) { run_count += 1; run_count }
 
     begin
       tasks << task
 
-      sleep 50.milliseconds
+      sleep 100.milliseconds
       run_count.should eq(1)
 
-      sleep 40.milliseconds
+      sleep 80.milliseconds
       run_count.should eq(2)
 
       task.cancel
 
-      sleep 40.milliseconds
+      sleep 80.milliseconds
       run_count.should eq(2)
 
       task.resume
 
-      sleep 50.milliseconds
+      sleep 100.milliseconds
       run_count.should eq(3)
     rescue error
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"

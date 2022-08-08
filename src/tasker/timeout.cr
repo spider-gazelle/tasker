@@ -7,8 +7,8 @@ class Tasker
     end
 
     def execute!
-      success = Channel(Output).new
-      failure = Channel(Exception).new
+      success = Channel(Output).new(1)
+      failure = Channel(Exception).new(1)
 
       if @same_thread
         fiber = Fiber.new { perform_action(success, failure) }
