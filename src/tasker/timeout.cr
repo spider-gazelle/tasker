@@ -12,9 +12,10 @@ class Tasker
 
       if @same_thread
         fiber = Fiber.new { perform_action(success, failure) }
-        start = Time.monotonic
+
         # scheudle this fiber to run again
         Fiber.current.enqueue
+        start = Time.monotonic
 
         # start the action that we want to perform
         fiber.resume
