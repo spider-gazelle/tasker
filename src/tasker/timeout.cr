@@ -10,14 +10,29 @@ class Tasker
       success = Channel(Output).new
       failure = Channel(Exception).new
 
-      spawn(same_thread: @same_thread) { perform_action(success, failure) }
+      if @same_thread
+        fiber = Fiber.new { perform_action(success, failure) }
+        start = Time.monotonic
+        # scheudle this fiber to run again
+        Fiber.current.enqueue
 
+        # start the action that we want to perform
+        fiber.resume
+        elapsed = Time.monotonic - start
+      else
+        spawn { perform_action(success, failure) }
+        elapsed = 0.seconds
+      end
+
+      # wait for the action to complete
       select
       when result = success.receive
         result
       when error = failure.receive
         raise error
-      when timeout(@period)
+        # NOTE:: the timeout won't fire if there is a result and the timeout is negative
+        # basically this select statement works as expected
+      when timeout(@period - elapsed)
         raise Timeout.new("timeout after #{@period}")
       end
     end

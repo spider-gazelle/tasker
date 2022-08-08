@@ -315,6 +315,9 @@ describe Tasker do
   it "should return the result of a timeout operation" do
     result = Tasker.timeout(100.milliseconds) { 34 }
     result.should eq 34
+
+    result = Tasker.timeout(-100.milliseconds) { "quick" }
+    result.should eq "quick"
   end
 
   it "should propagate errors" do
