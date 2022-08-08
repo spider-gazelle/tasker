@@ -24,6 +24,10 @@ class Tasker
     def cron(line : String, timezone = Time::Location.local, &callback : -> _) : Tasker::CRON
       Tasker::CRON.new(line, timezone, &callback).schedule.not_nil!
     end
+
+    def timeout(period : Time::Span, same_thread : Bool = true, &callback : -> _)
+      Tasker::TimeoutHander.new(period, same_thread, &callback).execute!
+    end
   end
 
   @@default : Tasker?

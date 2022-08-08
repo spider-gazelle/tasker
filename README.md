@@ -20,13 +20,11 @@ At a time in the future
     Tasker.at(20.seconds.from_now) { perform_action }.get
 ```
 
-
 After some period of time
 
 ```crystal
     Tasker.in(20.seconds) { perform_action }
 ```
-
 
 Repeating every time period
 
@@ -57,7 +55,6 @@ You can grab the values of repeating schedules too
     end
 ```
 
-
 Running a CRON job
 
 ```crystal
@@ -69,4 +66,12 @@ Running a CRON job
     Tasker.cron("30 7 * * *", berlin) { perform_action }
 
     # Also supports pause, resume and enumeration
+```
+
+Timeout an operation
+NOTE:: technically the operation isn't cancelled on timeout as there is no fiber cancel in crystal yet / no way to unwind stack consistently
+
+```crystal
+    # Run some code that is expected to complete within a certain time period
+    result = Tasker.timeout(10.seconds) { perform_action }
 ```

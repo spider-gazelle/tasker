@@ -20,12 +20,12 @@ abstract class Tasker::Task
   end
 
   # required for comparable
-  def <=>(task)
-    @next_scheduled.not_nil! <=> task.next_scheduled.not_nil!
+  def <=>(other)
+    @next_scheduled.not_nil! <=> other.next_scheduled.not_nil!
   end
 
-  def ==(task)
-    self.object_id == task.object_id
+  def ==(other)
+    self.object_id == other.object_id
   end
 
   def cancel(msg = "Task canceled") : Nil

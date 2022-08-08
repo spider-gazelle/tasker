@@ -66,25 +66,26 @@ describe Tasker do
   it "should schedule a task to run in the future" do
     sched = Tasker.instance
     ran = 0
-    tasks << sched.at(4.milliseconds.from_now) { ran = 1 }
+    tasks << sched.at(40.milliseconds.from_now) { ran = 1 }
 
-    sleep 2.milliseconds
+    sleep 20.milliseconds
     ran.should eq(0)
 
-    sleep 3.milliseconds
+    sleep 30.milliseconds
     ran.should eq(1)
   end
 
   it "should cancel a scheduled task" do
     sched = Tasker.instance
     ran = 0
-    task = sched.at(4.milliseconds.from_now) { ran = 1 }
+    task = sched.at(40.milliseconds.from_now) { ran = 1 }
     tasks << task
 
-    sleep 2.milliseconds
+    sleep 20.milliseconds
     task.cancel
 
-    sleep 3.milliseconds
+    # wait until the task should have run
+    sleep 40.milliseconds
     ran.should eq(0)
   end
 
@@ -92,15 +93,15 @@ describe Tasker do
     sched = Tasker.instance
     ran = 0
 
-    time = 4.milliseconds.from_now
+    time = 40.milliseconds.from_now
     task1 = sched.at(time) { ran += 1 }
     tasks << sched.at(time) { ran += 1 }
     tasks << task1
 
-    sleep 2.milliseconds
+    sleep 20.milliseconds
     task1.cancel
 
-    sleep 3.milliseconds
+    sleep 30.milliseconds
     ran.should eq(1)
   end
 
@@ -108,10 +109,10 @@ describe Tasker do
     sched = Tasker.instance
     ran = 0
 
-    sched.in(2.milliseconds) { ran += 1 }
-    task2 = sched.every(4.milliseconds) { ran += 1 }
+    sched.in(20.milliseconds) { ran += 1 }
+    task2 = sched.every(40.milliseconds) { ran += 1 }
 
-    sleep 10.milliseconds
+    sleep 100.milliseconds
     task2.cancel
     ran.should eq(3)
   end
@@ -119,12 +120,12 @@ describe Tasker do
   it "should schedule a task to run after a period of time" do
     sched = Tasker.instance
     ran = 0
-    tasks << sched.in(4.milliseconds) { ran = 1 }
+    tasks << sched.in(40.milliseconds) { ran = 1 }
 
-    sleep 2.milliseconds
+    sleep 20.milliseconds
     ran.should eq(0)
 
-    sleep 3.milliseconds
+    sleep 30.milliseconds
     ran.should eq(1)
   end
 
@@ -161,21 +162,21 @@ describe Tasker do
   it "should schedule a repeating task" do
     sched = Tasker.instance
     repeat_count = 0
-    task = sched.every(4.milliseconds) { repeat_count += 1 }
+    task = sched.every(40.milliseconds) { repeat_count += 1 }
 
     begin
       tasks << task
 
-      sleep 1.milliseconds
+      sleep 10.milliseconds
       repeat_count.should eq(0)
 
-      sleep 5.milliseconds
+      sleep 50.milliseconds
       repeat_count.should eq(1)
 
-      sleep 4.milliseconds
+      sleep 40.milliseconds
       repeat_count.should eq(2)
 
-      sleep 4.milliseconds
+      sleep 40.milliseconds
       repeat_count.should eq(3)
     rescue error
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
@@ -187,25 +188,25 @@ describe Tasker do
   it "should pause and resume a repeating task" do
     sched = Tasker.instance
     run_count = 0
-    task = sched.every(4.milliseconds) { run_count += 1; run_count }
+    task = sched.every(40.milliseconds) { run_count += 1; run_count }
 
     begin
       tasks << task
 
-      sleep 5.milliseconds
+      sleep 50.milliseconds
       run_count.should eq(1)
 
-      sleep 4.milliseconds
+      sleep 40.milliseconds
       run_count.should eq(2)
 
       task.cancel
 
-      sleep 4.milliseconds
+      sleep 40.milliseconds
       run_count.should eq(2)
 
       task.resume
 
-      sleep 5.milliseconds
+      sleep 50.milliseconds
       run_count.should eq(3)
     rescue error
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
@@ -302,6 +303,23 @@ describe Tasker do
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
     ensure
       task.cancel
+    end
+  end
+
+  it "should timeout an operation" do
+    expect_raises(Tasker::Timeout) do
+      Tasker.timeout(100.milliseconds) { sleep 200.milliseconds }
+    end
+  end
+
+  it "should return the result of a timeout operation" do
+    result = Tasker.timeout(100.milliseconds) { 34 }
+    result.should eq 34
+  end
+
+  it "should propagate errors" do
+    expect_raises(Channel::ClosedError) do
+      Tasker.timeout(100.milliseconds) { raise Channel::ClosedError.new("testing"); 34 }
     end
   end
 end
