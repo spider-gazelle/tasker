@@ -2,10 +2,8 @@
 
 [![Build Status](https://github.com/spider-gazelle/tasker/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/spider-gazelle/tasker/actions/workflows/CI.yml)
 
-
 A high precision scheduler for crystal lang.
 Allows you to schedule tasks to run in the future and obtain the results.
-
 
 Usage
 =====
@@ -75,3 +73,23 @@ NOTE:: technically the operation isn't cancelled on timeout as there is no fiber
     # Run some code that is expected to complete within a certain time period
     result = Tasker.timeout(10.seconds) { perform_action }
 ```
+
+## Pipelines
+
+a non-blocking, asynchronous pipeline where each step only processes the input if it's not already processing the previous input.
+
+```crystal
+pipeline = Tasker::Pipeline(Input, Output).new("name") do |input|
+  process(input) # => Output
+end
+
+pipeline.chain { |output_of_first_step|
+  next_step(output_of_first_step)
+}.subscribe { |output|
+  # a subscribe step is always run, even if it's already running
+  publish output
+}
+```
+
+The idea is to maximise throughput with minimal latency.
+Make sure to use the `-Dpreview_mt` flag when building.
