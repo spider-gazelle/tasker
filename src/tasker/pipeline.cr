@@ -81,8 +81,13 @@ class Tasker
     end
 
     # shutdown processing
-    def stop
+    def close
       @in.close
+    end
+
+    # check if the pipline is running
+    def closed?
+      @in.closed?
     end
 
     protected def process_loop
@@ -97,8 +102,8 @@ class Tasker
           t2 = Time.monotonic
           @time = t2 - t1
           @chained.each(&.process(output))
+        rescue Channel::ClosedError
         rescue error
-          return if @in.closed?
           Log.error(exception: error) { "error in pipeline #{@name}" }
         end
       end
