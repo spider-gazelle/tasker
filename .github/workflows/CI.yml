@@ -13,7 +13,6 @@ jobs:
         os: [ubuntu-latest]
         crystal:
           - latest
-          - nightly
     runs-on: ${{ matrix.os }}
     container: crystallang/crystal:${{ matrix.crystal }}-alpine
     steps:
