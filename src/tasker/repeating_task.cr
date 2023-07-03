@@ -45,7 +45,7 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
     @future.get
   end
 
-  def each
+  def each(&)
     while @future.state != Future::State::Canceled
       yield @future.get
     end

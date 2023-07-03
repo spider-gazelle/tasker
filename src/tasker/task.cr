@@ -16,12 +16,12 @@ abstract class Tasker::Task
   getter next_scheduled : Time?
 
   def next_epoch
-    @next_scheduled.not_nil!.to_unix_ms
+    @next_scheduled.as(Time).to_unix_ms
   end
 
   # required for comparable
   def <=>(other)
-    @next_scheduled.not_nil! <=> other.next_scheduled.not_nil!
+    @next_scheduled.as(Time) <=> other.next_scheduled.as(Time)
   end
 
   def ==(other)
@@ -37,7 +37,7 @@ abstract class Tasker::Task
   abstract def trigger
   abstract def get
 
-  def each
+  def each(&)
     yield get
   end
 

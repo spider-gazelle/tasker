@@ -33,7 +33,7 @@ class Tasker
     getter time : Time::Span = 0.seconds
 
     # is work being performed currently
-    getter idle : Bool = true
+    getter? idle : Bool = true
 
     # name of the pipeline
     getter name : String?
@@ -96,7 +96,7 @@ class Tasker
           output = @work.call input
           t2 = Time.monotonic
           @time = t2 - t1
-          @chained.each { |proc| proc.process output }
+          @chained.each(&.process(output))
         rescue error
           return if @in.closed?
           Log.error(exception: error) { "error in pipeline #{@name}" }
