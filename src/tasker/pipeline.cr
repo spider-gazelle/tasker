@@ -77,7 +77,7 @@ class Tasker
 
     # :nodoc:
     def finalize
-      stop
+      close
     end
 
     # shutdown processing
@@ -96,8 +96,8 @@ class Tasker
         begin
           @idle = true
           input = @in.receive
-          t1 = Time.monotonic
           @idle = false
+          t1 = Time.monotonic
           output = @work.call input
           t2 = Time.monotonic
           @time = t2 - t1
