@@ -1,6 +1,8 @@
 class Tasker
   module Processor(Input)
     abstract def process(input : Input) : Bool
+    abstract def close : Nil
+    abstract def closed? : Bool
   end
 
   class Subscription(Input)
@@ -12,6 +14,14 @@ class Tasker
     def process(input : Input) : Bool
       @work.call input
       true
+    end
+
+    def close : Nil
+    end
+
+    # check if the pipline is running
+    def closed? : Bool
+      false
     end
   end
 
@@ -81,12 +91,13 @@ class Tasker
     end
 
     # shutdown processing
-    def close
+    def close : Nil
       @in.close
+      @chained.each(&.close)
     end
 
     # check if the pipline is running
-    def closed?
+    def closed? : Bool
       @in.closed?
     end
 
