@@ -1,4 +1,4 @@
-require "./helper"
+require "./spec_helper"
 
 describe Tasker do
   it "should perform tasks in a pipeline" do
