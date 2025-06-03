@@ -8,16 +8,16 @@ describe Tasker do
     result = 0.0
 
     pipeline = Tasker::Pipeline(Int32, Int32).new("name") { |input|
-      sleep 0.1
+      sleep 100.milliseconds
       input
     }
 
     pipeline.chain { |input|
-      sleep 0.2
+      sleep 200.milliseconds
       add_invoke += 1
       (input + 1).to_f
     }.chain { |input|
-      sleep 0.3
+      sleep 300.milliseconds
       multi_invoke += 1
       input * 3
     }.subscribe { |output|
@@ -26,11 +26,11 @@ describe Tasker do
     }
 
     50.times do
-      sleep 0.05
+      sleep 50.milliseconds
       pipeline.process 100
     end
 
-    sleep 1
+    sleep 1.second
 
     sub_invoke.should eq multi_invoke
     (multi_invoke < add_invoke).should be_true

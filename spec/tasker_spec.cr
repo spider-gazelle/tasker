@@ -284,11 +284,11 @@ describe Tasker do
     begin
       tasks << task
 
-      seconds = (60 - time.second) // 2
+      seconds = ((60 - time.second) // 2).seconds
       sleep seconds
       ran.should eq(0)
 
-      sleep seconds + 1
+      sleep(seconds + 1.second)
       ran.should eq(1)
     rescue error
       puts "\nfailed cancel running tasks\n#{error.inspect_with_backtrace}"
