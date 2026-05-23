@@ -17,8 +17,6 @@ class Tasker::OneShot(R) < Tasker::Task
     @last_scheduled = @next_scheduled
     @next_scheduled = nil
     @trigger_count += 1
-    @timer.try &.cancel
-    @timer = nil
     @future.trigger
   end
 

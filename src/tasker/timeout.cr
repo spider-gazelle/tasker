@@ -15,11 +15,11 @@ class Tasker
 
         # scheudle this fiber to run again
         Fiber.current.enqueue
-        start = Time.monotonic
+        start = Time.instant
 
         # start the action that we want to perform
         fiber.resume
-        elapsed = Time.monotonic - start
+        elapsed = Time.instant - start
       else
         spawn { perform_action(success, failure) }
         elapsed = 0.seconds

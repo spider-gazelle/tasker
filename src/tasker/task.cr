@@ -1,4 +1,4 @@
-require "./timer"
+require "./reactor"
 
 abstract class Tasker::Task
   include Comparable(Tasker::Task)
@@ -7,8 +7,6 @@ abstract class Tasker::Task
     @created = Time.utc
     @trigger_count = 0_i64
   end
-
-  @timer : Timer?
 
   getter created : Time
   getter trigger_count : Int64
@@ -29,8 +27,7 @@ abstract class Tasker::Task
   end
 
   def cancel(msg = "Task canceled") : Nil
-    @timer.try &.cancel
-    @timer = nil
+    Tasker::Reactor.instance.cancel(self)
   end
 
   abstract def resume
@@ -44,22 +41,8 @@ abstract class Tasker::Task
   SYNC_PERIOD = 2.minutes.total_milliseconds / 1000.0_f64
 
   def schedule
-    Log.trace { "task scheduling timer, id: #{self.object_id}" }
-
-    now = Time.utc.to_unix_ms
-    time = next_epoch
-    period = time - now
-
-    # Calculate the delay period
-    seconds = if period < 0
-                Log.trace { "scheduled for the past, id: #{self.object_id}" }
-                0.0
-              else
-                period.to_f64 / 1000.0_f64
-              end
-
-    @timer = timer = Timer.new(seconds) { trigger }
-    timer.start_timer
+    Log.trace { "task registering with reactor, id: #{self.object_id}" }
+    Tasker::Reactor.instance.schedule(self)
     self
   end
 end

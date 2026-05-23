@@ -108,9 +108,9 @@ class Tasker
           @idle = true
           input = @in.receive
           @idle = false
-          t1 = Time.monotonic
+          t1 = Time.instant
           output = @work.call input
-          t2 = Time.monotonic
+          t2 = Time.instant
           @time = t2 - t1
           @chained.each(&.process(output))
         rescue Channel::ClosedError
