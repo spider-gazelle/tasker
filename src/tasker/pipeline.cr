@@ -32,7 +32,7 @@ class Tasker
     include Processor(Input)
 
     def initialize(@name : String? = nil, &@work : Input -> Output)
-      spawn { process_loop }
+      spawn(name: "tasker-pipeline") { process_loop }
     end
 
     @work : Proc(Input, Output)

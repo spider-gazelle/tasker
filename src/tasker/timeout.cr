@@ -21,7 +21,7 @@ class Tasker
         fiber.resume
         elapsed = Time.instant - start
       else
-        spawn { perform_action(success, failure) }
+        spawn(name: "tasker-timeout") { perform_action(success, failure) }
         elapsed = 0.seconds
       end
 
