@@ -11,9 +11,12 @@ class Tasker::CRON(R) < Tasker::RepeatingTask(R)
   getter next_scheduled : Time?
 
   def schedule
-    return if @future.state == Future::State::Canceled
-    @last_scheduled = @next_scheduled
-    @next_scheduled = @cron.next(Time.local(@location))
-    super
+    synchronize do
+      return self if @future.state == Future::State::Canceled
+      @last_scheduled = @next_scheduled
+      @next_scheduled = @cron.next(Time.local(@location))
+      super
+    end
+    self
   end
 end

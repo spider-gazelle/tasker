@@ -25,8 +25,8 @@ class Tasker
       Tasker::CRON.new(line, timezone, &callback).schedule.as(Tasker::CRON)
     end
 
-    def timeout(period : Time::Span, same_thread : Bool = true, &callback : -> _)
-      Tasker::TimeoutHander.new(period, same_thread, &callback).execute!
+    def timeout(period : Time::Span, &callback : -> _)
+      Tasker::TimeoutHander.new(period, &callback).execute!
     end
   end
 

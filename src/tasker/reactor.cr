@@ -101,7 +101,7 @@ class Tasker::Reactor
 
   private def start : Nil
     @started = true
-    spawn(same_thread: true, name: "reactor-loop") { run }
+    spawn(name: "reactor-loop") { run }
   end
 
   private def run : Nil
@@ -128,7 +128,7 @@ class Tasker::Reactor
     end
   rescue error
     Log.error(exception: error) { "tasker reactor loop crashed; restarting" }
-    spawn(same_thread: true, name: "reactor-loop") { run }
+    spawn(name: "reactor-loop") { run }
   end
 
   # Pop and fire every task whose deadline has passed. Each callback runs on its
@@ -144,7 +144,7 @@ class Tasker::Reactor
 
       # bind to a non-nil local so the spawned closure doesn't capture a nilable
       due = task
-      spawn(same_thread: true, name: "scheduled-task") { due.trigger }
+      spawn(name: "scheduled-task") { due.trigger }
     end
   end
 

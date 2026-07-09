@@ -141,7 +141,7 @@ describe Tasker do
     # Test cancelation
     task = sched.at(2.milliseconds.from_now) { true }
     tasks << task
-    spawn(same_thread: true) { task.cancel }
+    spawn { task.cancel }
     begin
       task.get
       raise "failed"
@@ -231,7 +231,7 @@ describe Tasker do
       task.get.should eq 5
 
       # Test cancelation
-      spawn(same_thread: true) { task.cancel }
+      spawn { task.cancel }
       begin
         task.get
         raise "failed"
@@ -314,6 +314,35 @@ describe Tasker do
   it "should propagate errors" do
     expect_raises(Channel::ClosedError) do
       Tasker.timeout(100.milliseconds) { raise Channel::ClosedError.new("testing"); 34 }
+    end
+  end
+
+  it "keeps a user-thread cancel safe against a concurrent reschedule" do
+    sched = Tasker.instance
+
+    # Repeatedly race a cancel (issued from a separate fiber) against the
+    # reactor triggering and rescheduling the same task. Under multi-threading
+    # this exercises the window where a reschedule could otherwise clobber the
+    # cancel; the per-task lock must make cancel always win.
+    25.times do
+      task = sched.every(1.milliseconds) { 42 }
+      tasks << task
+
+      # let it fire and re-arm a few times so a reschedule is genuinely in flight
+      sleep 3.milliseconds
+
+      done = Channel(Nil).new(1)
+      spawn { task.cancel; done.send(nil) }
+      done.receive
+
+      # once cancel returns, the task must be dead and stay dead — no in-flight
+      # reschedule may resurrect it.
+      task.next_scheduled.should be_nil
+      count = task.trigger_count
+      sleep 5.milliseconds
+      task.trigger_count.should eq count
+      task.next_scheduled.should be_nil
+      expect_raises(::Future::CanceledError) { task.get }
     end
   end
 end

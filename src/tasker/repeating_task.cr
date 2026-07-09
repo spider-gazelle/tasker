@@ -16,28 +16,42 @@ abstract class Tasker::RepeatingTask(R) < Tasker::Task
   end
 
   def cancel(msg = "Task canceled")
-    super(msg)
-    return if @future.state == Future::State::Canceled
-    @next_scheduled = nil
-    @future.cancel(msg)
+    synchronize do
+      super(msg)
+      return if @future.state == Future::State::Canceled
+      @next_scheduled = nil
+      @future.cancel(msg)
+    end
   end
 
   def resume
-    return if @future.state != Future::State::Canceled
-    last = @last_scheduled
-    next_future
-    schedule
-    @last_scheduled = last
+    synchronize do
+      return if @future.state != Future::State::Canceled
+      last = @last_scheduled
+      next_future
+      schedule
+      @last_scheduled = last
+    end
   end
 
   def trigger
-    return if @future.state >= Future::State::Running
-    @trigger_count += 1
+    synchronize do
+      return if @future.state >= Future::State::Running
+      @trigger_count += 1
+    end
+    # callback runs outside the lock — a concurrent cancel isn't blocked
     @future.trigger
   ensure
-    if @future.state != Future::State::Canceled
-      next_future
-      schedule
+    # Record completion and decide on a reschedule under the lock. Because
+    # #complete and #cancel both run here (or in #cancel) under the same lock,
+    # a cancel that lands during the callback wins: #complete won't overwrite
+    # Canceled, so a cancelled task is never rescheduled.
+    synchronize do
+      @future.complete
+      if @future.state != Future::State::Canceled
+        next_future
+        schedule
+      end
     end
   end
 

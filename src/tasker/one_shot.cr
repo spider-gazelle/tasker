@@ -13,18 +13,26 @@ class Tasker::OneShot(R) < Tasker::Task
   getter next_scheduled : Time?
 
   def trigger
-    return if @future.state >= Future::State::Running
-    @last_scheduled = @next_scheduled
-    @next_scheduled = nil
-    @trigger_count += 1
+    synchronize do
+      return if @future.state >= Future::State::Running
+      @last_scheduled = @next_scheduled
+      @next_scheduled = nil
+      @trigger_count += 1
+    end
+    # callback runs outside the lock so a concurrent cancel isn't blocked
     @future.trigger
+    # record completion under the lock, serialised with #cancel; #complete
+    # won't overwrite a cancel that landed while the callback was running.
+    synchronize { @future.complete }
   end
 
   def cancel(msg = "Task canceled")
-    super(msg)
-    return if @future.state >= Future::State::Completed
-    @next_scheduled = nil
-    @future.cancel(msg)
+    synchronize do
+      super(msg)
+      return if @future.state >= Future::State::Completed
+      @next_scheduled = nil
+      @future.cancel(msg)
+    end
   end
 
   def get
